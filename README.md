@@ -13,7 +13,11 @@ A new 4K (3840×2160) wallpaper with a motivational quote on your desktop every 
 Get the latest installers from the [Releases page](https://github.com/shameerudeenbavasa-dotcom/UPwell-everyday/releases/latest):
 
 - **Windows:** `UpwellEveryday-Setup.exe`. Double-click it; no Python needed. If SmartScreen appears, click **More info → Run anyway**.
-- **macOS:** `UpwellEveryday.dmg`. Open it, right-click **Install Upwell Everyday.command** and choose **Open**.
+- **macOS:** `UpwellEveryday-AppleSilicon.dmg` (M1/M2/M3/M4 Macs) or `UpwellEveryday-Intel.dmg` (older Intel Macs). Not sure which? Apple menu → **About This Mac**: "Chip: Apple…" means Apple Silicon, "Processor: Intel…" means Intel.
+  1. Open the DMG and drag **Upwell Everyday** into **Applications**.
+  2. The first time, right-click the app in Applications and choose **Open**, then **Open** again (it isn't signed by an Apple-registered developer).
+  3. Allow it to control **System Events** when asked. Today's wallpaper appears, and it updates every morning by itself.
+  4. To remove it, drag the app to the Trash (it stops running once the app is gone).
 
 ## Install from source
 

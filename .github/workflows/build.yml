@@ -32,14 +32,27 @@ jobs:
           path: dist/UpwellEveryday-Setup.exe
 
   mac:
-    runs-on: macos-latest
+    strategy:
+      matrix:
+        include:
+          - runner: macos-latest
+            dmg: UpwellEveryday-AppleSilicon.dmg
+          - runner: macos-15-intel
+            dmg: UpwellEveryday-Intel.dmg
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v4
-      - run: bash mac/build_dmg.sh
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pillow pyinstaller
+      - name: Build app and DMG
+        run: |
+          VERSION=$([ "${{ github.ref_type }}" = tag ] && echo "${{ github.ref_name }}" | sed 's/^v//' || echo 0.0.0) bash mac/build_app.sh "${{ matrix.dmg }}"
       - uses: actions/upload-artifact@v4
         with:
-          name: UpwellEveryday-dmg
-          path: dist/UpwellEveryday.dmg
+          name: ${{ matrix.dmg }}
+          path: dist/${{ matrix.dmg }}
 
   release:
     if: github.ref_type == 'tag'
@@ -54,4 +67,5 @@ jobs:
         with:
           files: |
             out/UpwellEveryday-Setup.exe
-            out/UpwellEveryday.dmg
+            out/UpwellEveryday-AppleSilicon.dmg
+            out/UpwellEveryday-Intel.dmg

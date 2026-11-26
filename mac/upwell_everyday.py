@@ -161,7 +161,55 @@ def set_wallpaper(path: Path):
         print("Unsupported OS; wallpaper saved at", path)
 
 
+AGENT_LABEL = "com.upwelleveryday.wallpaper"
+
+
+def install_agent():
+    """When running as Upwell Everyday.app, schedule itself daily at 07:00 and at login."""
+    if not getattr(sys, "frozen", False) or platform.system() != "Darwin":
+        return
+    exe = sys.executable
+    plist = HOME / "Library" / "LaunchAgents" / f"{AGENT_LABEL}.plist"
+    body = f"""<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+  <key>Label</key><string>{AGENT_LABEL}</string>
+  <key>ProgramArguments</key><array><string>{exe}</string><string>--scheduled</string></array>
+  <key>RunAtLoad</key><true/>
+  <key>StartCalendarInterval</key><dict><key>Hour</key><integer>7</integer><key>Minute</key><integer>0</integer></dict>
+</dict></plist>
+"""
+    if plist.exists() and plist.read_text() == body:
+        return
+    plist.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(["launchctl", "unload", str(plist)], capture_output=True)
+    plist.write_text(body)
+    # Load without RunAtLoad firing a second copy right now is fine: the run is quick and idempotent.
+    subprocess.run(["launchctl", "load", str(plist)], capture_output=True)
+
+
+def uninstall_agent():
+    plist = HOME / "Library" / "LaunchAgents" / f"{AGENT_LABEL}.plist"
+    subprocess.run(["launchctl", "unload", str(plist)], capture_output=True)
+    plist.unlink(missing_ok=True)
+
+
+def notify(msg):
+    if platform.system() == "Darwin" and "--scheduled" not in sys.argv:
+        subprocess.run(["osascript", "-e", f'display notification "{msg}" with title "Upwell Everyday"'],
+                       capture_output=True)
+
+
 def main():
+    DATA.mkdir(parents=True, exist_ok=True)
+    if getattr(sys, "frozen", False):
+        log = open(DATA / "log.txt", "a", buffering=1)
+        sys.stdout = sys.stderr = log
+        print(f"--- {dt.datetime.now():%Y-%m-%d %H:%M} {sys.argv[1:]}")
+    if "--uninstall" in sys.argv:
+        uninstall_agent()
+        return
+    install_agent()
     today = dt.date.today()
     state = load_state()
     start = dt.date.fromisoformat(state["week_start"]) if "week_start" in state else None
@@ -176,7 +224,13 @@ def main():
     out.write_bytes(target.read_bytes())
     set_wallpaper(out)
     print("Wallpaper set:", out)
+    notify("Today's wallpaper is set. A new one arrives every morning.")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        print("Error:", repr(e))
+        notify("Couldn't update the wallpaper. Check your internet connection.")
+        raise
