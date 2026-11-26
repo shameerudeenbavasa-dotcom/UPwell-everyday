@@ -19,7 +19,7 @@ jobs:
       - name: Build UpwellEveryday.exe
         run: |
           pip install pillow pyinstaller
-          pyinstaller --onefile --noconsole --name UpwellEveryday --icon windows/icon.ico --distpath build/dist --workpath build/work --specpath build windows/upwell_everyday.py
+          pyinstaller --onefile --noconsole --name UpwellEveryday --icon "${{ github.workspace }}/windows/icon.ico" --distpath build/dist --workpath build/work --specpath build windows/upwell_everyday.py
       - name: Build installer
         shell: pwsh
         run: |
