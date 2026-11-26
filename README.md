@@ -1,3 +1,5 @@
+<p align="center"><img src="icons/icon.png" width="160" alt="Upwell Everyday icon"></p>
+
 # Upwell Everyday
 
 A new 4K (3840×2160) wallpaper with a motivational quote on your desktop every day, for macOS and Windows.
@@ -6,7 +8,14 @@ A new 4K (3840×2160) wallpaper with a motivational quote on your desktop every 
 - It changes the wallpaper every morning at 07:00 and each time you log in.
 - It cycles through 35 built-in quotes without repeating until all have been used.
 
-## Install
+## Download
+
+Get the latest installers from the [Releases page](https://github.com/shameerudeenbavasa-dotcom/UPwell-everyday/releases/latest):
+
+- **Windows:** `UpwellEveryday-Setup.exe`. Double-click it; no Python needed. If SmartScreen appears, click **More info → Run anyway**.
+- **macOS:** `UpwellEveryday.dmg`. Open it, right-click **Install Upwell Everyday.command** and choose **Open**.
+
+## Install from source
 
 ### macOS
 Needs Python 3 (included with macOS Command Line Tools).

@@ -1,0 +1,57 @@
+name: Build installers
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build UpwellEveryday.exe
+        run: |
+          pip install pillow pyinstaller
+          pyinstaller --onefile --noconsole --name UpwellEveryday --icon windows/icon.ico --distpath build/dist --workpath build/work --specpath build windows/upwell_everyday.py
+      - name: Build installer
+        shell: pwsh
+        run: |
+          if (-not (Get-Command iscc -ErrorAction SilentlyContinue)) { choco install innosetup -y --no-progress }
+          $ver = if ("${{ github.ref_type }}" -eq "tag") { "${{ github.ref_name }}".TrimStart("v") } else { "0.0.0" }
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" "/DAppVersion=$ver" windows\installer.iss
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UpwellEveryday-Setup
+          path: dist/UpwellEveryday-Setup.exe
+
+  mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: bash mac/build_dmg.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: UpwellEveryday-dmg
+          path: dist/UpwellEveryday.dmg
+
+  release:
+    if: github.ref_type == 'tag'
+    needs: [windows, mac]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: out
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            out/UpwellEveryday-Setup.exe
+            out/UpwellEveryday.dmg
