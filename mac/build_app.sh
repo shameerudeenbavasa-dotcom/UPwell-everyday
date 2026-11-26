@@ -19,10 +19,10 @@ T="$(mktemp -d)"; mkdir "$T/src"
 cp -R "$APP" "$T/src/"
 ln -s /Applications "$T/src/Applications"
 cp icons/icon.icns "$T/src/.VolumeIcon.icns"
-hdiutil create -volname "Upwell Everyday" -srcfolder "$T/src" -ov -format UDRW "$T/rw.dmg" >/dev/null
+for i in 1 2 3 4 5; do hdiutil create -volname "Upwell Everyday" -srcfolder "$T/src" -ov -format UDRW "$T/rw.dmg" >/dev/null && break; echo "hdiutil busy, retrying"; sleep 5; done
 MNT="$T/mnt"; hdiutil attach -nobrowse "$T/rw.dmg" -mountpoint "$MNT" >/dev/null
 SetFile -a C "$MNT" 2>/dev/null || osascript -l JavaScript -e "ObjC.import('AppKit'); \$.NSWorkspace.sharedWorkspace.setIconForFileOptions(\$.NSImage.alloc.initWithContentsOfFile('$ROOT/icons/icon.icns'),'$MNT',0)" >/dev/null
-hdiutil detach "$MNT" >/dev/null
+sync; for i in 1 2 3 4 5; do hdiutil detach "$MNT" >/dev/null 2>&1 && break; sleep 3; [ $i -ge 3 ] && hdiutil detach -force "$MNT" >/dev/null 2>&1 && break; done
 rm -f "dist/$NAME"
 hdiutil convert "$T/rw.dmg" -format UDZO -o "dist/$NAME" >/dev/null
 echo "Built $APP and dist/$NAME"

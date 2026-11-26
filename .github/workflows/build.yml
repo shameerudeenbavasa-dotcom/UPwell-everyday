@@ -33,6 +33,7 @@ jobs:
 
   mac:
     strategy:
+      fail-fast: false
       matrix:
         include:
           - runner: macos-latest
