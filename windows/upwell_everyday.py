@@ -13,6 +13,7 @@ import json
 import os
 import platform
 import random
+import ssl
 import subprocess
 import sys
 import textwrap
@@ -89,11 +90,19 @@ def font(size, bold=False):
     return ImageFont.load_default(size)
 
 
+def ssl_context():
+    try:
+        import certifi  # bundled CA certificates (needed inside the packaged app)
+        return ssl.create_default_context(cafile=certifi.where())
+    except ImportError:
+        return ssl.create_default_context()
+
+
 def download_photo(seed: str) -> Image.Image:
     # Picsum serves Unsplash photographs cropped/resized to exactly 3840x2160 (4K UHD).
     url = f"https://picsum.photos/seed/{seed}/{W}/{H}.jpg"
     req = urllib.request.Request(url, headers={"User-Agent": "UpwellEveryday/1.0"})
-    with urllib.request.urlopen(req, timeout=60) as r:
+    with urllib.request.urlopen(req, timeout=60, context=ssl_context()) as r:
         tmp = WEEK_DIR / "_dl.jpg"
         tmp.write_bytes(r.read())
     img = Image.open(tmp).convert("RGB")

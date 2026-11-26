@@ -18,7 +18,7 @@ jobs:
           python-version: "3.12"
       - name: Build UpwellEveryday.exe
         run: |
-          pip install pillow pyinstaller
+          pip install pillow pyinstaller certifi
           pyinstaller --onefile --noconsole --name UpwellEveryday --icon "${{ github.workspace }}/windows/icon.ico" --distpath build/dist --workpath build/work --specpath build windows/upwell_everyday.py
       - name: Build installer
         shell: pwsh
@@ -46,7 +46,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install pillow pyinstaller
+      - run: pip install pillow pyinstaller certifi
       - name: Build app and DMG
         run: |
           VERSION=$([ "${{ github.ref_type }}" = tag ] && echo "${{ github.ref_name }}" | sed 's/^v//' || echo 0.0.0) bash mac/build_app.sh "${{ matrix.dmg }}"
